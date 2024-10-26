@@ -154,9 +154,9 @@ bool TMSerial::OnSerialRX()
                     imu_data_msg.angular_velocity.y =  gyro_y;
                     imu_data_msg.angular_velocity.z =  gyro_z;
 
-                    imu_data_msg.linear_acceleration.x = acc_x; 
-                    imu_data_msg.linear_acceleration.y = acc_y;
-                    imu_data_msg.linear_acceleration.z = acc_z;
+                    imu_data_msg.linear_acceleration.x = acc_x*9.794; 
+                    imu_data_msg.linear_acceleration.y = acc_y*9.794;
+                    imu_data_msg.linear_acceleration.z = acc_z*9.794;
 
                     imu_data_mag_msg.magnetic_field.x = mag_x;
                     imu_data_mag_msg.magnetic_field.y = mag_y;
