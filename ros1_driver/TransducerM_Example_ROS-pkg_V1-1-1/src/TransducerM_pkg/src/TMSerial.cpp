@@ -7,7 +7,7 @@ EasyObjectDictionary eOD;
 EasyProfile          eP(&eOD);
 
 //Define the serial port here:
-#define         DEVICE_PORT             "/dev/ttyACM1"
+#define         DEVICE_PORT             "/dev/ttyACM0"
 
 TMSerial::TMSerial()
 {
@@ -69,11 +69,11 @@ void TMSerial::On_SerialRX(sensor_msgs::Imu *msg_imu){  // Changed to standard s
             //std::cout<<"RA";
             Ep_Raw_GyroAccMag ep_Raw_GyroAccMag;
             if(EP_SUCC_ == eOD.Read_Ep_Raw_GyroAccMag(&ep_Raw_GyroAccMag)){
-                msg_imu->header.stamp = ros::Time::now();
+                
                 msg_imu->header.frame_id="imu_link"; 
-                msg_imu->linear_acceleration.x = ep_Raw_GyroAccMag.acc[0]*9.8;
-                msg_imu->linear_acceleration.y = ep_Raw_GyroAccMag.acc[1]*9.8;
-                msg_imu->linear_acceleration.z = ep_Raw_GyroAccMag.acc[2]*9.8;
+                msg_imu->linear_acceleration.x = -1*ep_Raw_GyroAccMag.acc[0]*9.8;
+                msg_imu->linear_acceleration.y = -1*ep_Raw_GyroAccMag.acc[1]*9.8;
+                msg_imu->linear_acceleration.z = -1*ep_Raw_GyroAccMag.acc[2]*9.8;
 
                 msg_imu->angular_velocity.x = ep_Raw_GyroAccMag.gyro[0];
                 msg_imu->angular_velocity.y = ep_Raw_GyroAccMag.gyro[1];
@@ -83,12 +83,12 @@ void TMSerial::On_SerialRX(sensor_msgs::Imu *msg_imu){  // Changed to standard s
         case EP_CMD_Q_S1_E_:{
             Ep_Q_s1_e ep_Q_s1_e;
             if(EP_SUCC_ == eOD.Read_Ep_Q_s1_e(&ep_Q_s1_e)){ // Step 3.3: If we decided that the received Quaternion should be used,
-                msg_imu->header.stamp = ros::Time::now();
+                //msg_imu->header.stamp = ros::Time::now();
                 msg_imu->header.frame_id="imu_link";                                   //           Here is an example of how to access the Quaternion data.
-                msg_imu->orientation.x = ep_Q_s1_e.q[0];
-                msg_imu->orientation.y = ep_Q_s1_e.q[1];
-                msg_imu->orientation.z = ep_Q_s1_e.q[2];
-                msg_imu->orientation.w = ep_Q_s1_e.q[3];
+                msg_imu->orientation.w = ep_Q_s1_e.q[0];
+                msg_imu->orientation.x = ep_Q_s1_e.q[1];
+                msg_imu->orientation.y = ep_Q_s1_e.q[2];
+                msg_imu->orientation.z = ep_Q_s1_e.q[3];
             }
         }break;
         case EP_CMD_RPY_:{
@@ -115,12 +115,14 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "tmSerial");
     ros::NodeHandle nh;
     sensor_msgs::Imu msg_imu;  // Changed to standard ROS IMU message
-    ros::Publisher TransducerM_pub = nh.advertise<sensor_msgs::Imu>("TransducerM", 1000);
+    ros::Publisher TransducerM_pub = nh.advertise<sensor_msgs::Imu>("/imu_data", 1);
 
-    ros::Rate loop_rate(100);
+    ros::Rate loop_rate(500);
     while (ros::ok())
     {
+
       tmSerial1.On_SerialRX(&msg_imu);
+      msg_imu.header.stamp = ros::Time::now();
       TransducerM_pub.publish(msg_imu);
 
       loop_rate.sleep();
